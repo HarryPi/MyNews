@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="facebook_request_code">64206</integer>
+    <integer name="normal_registration_code">5000</integer>
+    <integer name="normal_registration_success_code">5001</integer>
+    <integer name="normal_registration_cancel_code">5002</integer>
+</resources>
