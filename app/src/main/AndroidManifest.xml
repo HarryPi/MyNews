@@ -45,9 +45,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".LogInFormActivity"
-            android:label="@string/title_activity_log_in_form" />
         <activity android:name=".Activities.MainActivity" />
         <activity android:name=".Activities.HeadlineUrlActivity" />
         <activity android:name=".Activities.SourceSelectionActivity" />

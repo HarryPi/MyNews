@@ -39,6 +39,12 @@ public class CountryLocUtil {
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     public String getUserCountryOrDefault(Activity activity) {
         // Request permision
+        if (ActivityCompat.checkSelfPermission(application.getApplicationContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    2);
+        }
         String countryName = null;
         LocationManager lm = (LocationManager) application.getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         Geocoder geocoder = new Geocoder(application.getApplicationContext());
@@ -56,12 +62,7 @@ public class CountryLocUtil {
                 }
             }
         }
-        if (ActivityCompat.checkSelfPermission(application.getApplicationContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    2);
-        }
+
         return countryName.toLowerCase();
     }
     @Nullable

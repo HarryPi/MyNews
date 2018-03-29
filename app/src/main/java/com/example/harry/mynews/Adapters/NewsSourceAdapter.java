@@ -29,12 +29,10 @@ import butterknife.ButterKnife;
 public class NewsSourceAdapter extends RecyclerView.Adapter<NewsSourceAdapter.ViewHolder> {
     private Context context;
     private List<ListItem> listItems;
-    private Picasso picasso;
 
     @Inject
-    public NewsSourceAdapter(Application application, Picasso picasso) {
+    public NewsSourceAdapter(Application application) {
         this.context = application.getApplicationContext();
-        this.picasso = picasso;
     }
 
     @Override
@@ -49,10 +47,6 @@ public class NewsSourceAdapter extends RecyclerView.Adapter<NewsSourceAdapter.Vi
         ListItem item = listItems.get(position);
         holder.title.setText(item.getTitle());
         holder.description.setText(item.getDescription());
-        picasso.load(item.getImgUrl())
-                .transform(new RoundedCornersTransform())
-                .fit()
-                .into(holder.articleImage);
     }
 
     public void setListItems(@NonNull List<ListItem> listItems) {

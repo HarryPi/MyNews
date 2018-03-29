@@ -58,6 +58,7 @@ public class HeadlinesAdapter extends RecyclerView.Adapter<HeadlinesAdapter.View
         picasso.load(item.getImgUrl())
                 .transform(new RoundedCornersTransform())
                 .placeholder(R.drawable.loading_animation)
+                .error(R.mipmap.ic_image)
                 .fit()
                 .into(holder.articleImage);
     }

@@ -1,90 +1,122 @@
 package com.example.harry.mynews.Activities;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.example.harry.mynews.R;
+import com.firebase.ui.auth.AuthUI;
 
-import java.util.Map;
-
-public class BaseActivity extends Activity
+public class BaseActivity extends AppCompatActivity
 {
-    public DrawerLayout drawerLayout;
-    public ListView drawerList;
-    public String[] layers;
-    private ActionBarDrawerToggle drawerToggle;
-    private Map map;
+    RelativeLayout fullLayout;
+    FrameLayout frameLayout;
+    DrawerLayout drawerLayout;
+    NavigationView navigationView;
+    Toolbar toolbar;
 
-    protected void onCreateDrawer()
-    {
-        // R.id.drawer_layout should be in every activity with exactly the same id.
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        drawerToggle = new ActionBarDrawerToggle((Activity) this, drawerLayout, R.drawable.ic_drawer, 0, 0)
-        {
-            public void onDrawerClosed(View view)
-            {
-                getActionBar().setTitle(R.string.app_name);
-            }
+    private static final String LOGOUT_MESSAGE = "Are you sure you want to log out?";
+    private static final String CONFIRM = "Yes";
+    private static final String CANCEL = "No";
 
-            public void onDrawerOpened(View drawerView)
-            {
-                getActionBar().setTitle(R.string.menu);
-            }
-        };
-        drawerLayout.setDrawerListener(drawerToggle);
+    public void setUpSideNav() {
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
 
-        layers = getResources().getStringArray(R.array.layers_array);
-        drawerList = (ListView) findViewById(R.id.left_drawer);
-        View header = getLayoutInflater().inflate(R.layout.drawer_list_header, null);
-        drawerList.addHeaderView(header, null, false);
-        drawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, android.R.id.text1,
-                layers));
-        View footerView = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(
-                R.layout.drawer_list_footer, null, false);
-        drawerList.addFooterView(footerView);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
-        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {
-                map.drawerClickEvent(pos);
-            }
+        navigationView.setNavigationItemSelectedListener(item -> {
+            onNavItemClickAction(item);
+            return true;
         });
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_basic);
+    }
 
-        if (drawerToggle.onOptionsItemSelected(item)) {
-            return true;
+    @Override
+    public void setContentView(int layoutRes) {
+
+
+        fullLayout = (RelativeLayout) getLayoutInflater().inflate(R.layout.activity_basic,null);
+        frameLayout = fullLayout.findViewById(R.id.content_frame);
+        getLayoutInflater().inflate(layoutRes, frameLayout, true);
+
+        super.setContentView(fullLayout);
+
+        // We do not use butterknife here as butterknife can ONLY BIND ONCE,
+        // thus if we bind here no class that inherits from our base class can bind
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+        toolbar = findViewById(R.id.toolbar);
+    }
+
+    private void onNavItemClickAction(@NonNull MenuItem item) {
+        item.setChecked(true); // This is to persist click state
+
+        int id = item.getItemId();
+
+        if (id == R.id.nav_logout) {
+            onLogOutAction();
+        }
+        else if (id == R.id.nav_sources) {
+
+        }
+        drawerLayout.closeDrawers();
+    }
+    private void onLogOutAction() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        DialogInterface.OnClickListener dialogListener = createConfirmDialog();
+        builder.setMessage(LOGOUT_MESSAGE)
+                .setPositiveButton(CONFIRM, dialogListener)
+                .setNegativeButton(CANCEL, dialogListener)
+                .show();
+    }
+    private DialogInterface.OnClickListener createConfirmDialog() {
+        return (dialogInterface, flag) -> {
+            switch (flag) {
+                case DialogInterface.BUTTON_POSITIVE:
+                    //logout
+                    AuthUI.getInstance().signOut(this);
+                    startActivity(new Intent(this, LogInActivity.class));
+                    break;
+                case DialogInterface.BUTTON_NEGATIVE:
+                    //cancel
+                    break;
+            }
+        };
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                // Notice that the code above passes GravityCompat.START as the open drawer animation
+                // gravity to openDrawer(). This ensures nav drawer open animation
+                // behaves properly for both right-to-left and left-to-right layouts
+                return true;
         }
         return super.onOptionsItemSelected(item);
-
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        drawerToggle.syncState();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        drawerToggle.onConfigurationChanged(newConfig);
-    }
 }
