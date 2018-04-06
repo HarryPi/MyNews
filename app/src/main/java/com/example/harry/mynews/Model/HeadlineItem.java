@@ -4,17 +4,27 @@ package com.example.harry.mynews.Model;
  * Created by harry on 15/03/2018.
  */
 
-public class ListItem {
+public class HeadlineItem {
     private String title;
     private String description;
     private String imgUrl;
     private String urlToArticle;
+    private String sourceName;
 
-    public ListItem(String title, String description, String imgUrl, String url) {
+    public HeadlineItem(String title, String description, String imgUrl, String urlToArticle, String sourceName) {
         this.title = title;
         this.description = description;
         this.imgUrl = imgUrl;
-        this.urlToArticle = url;
+        this.urlToArticle = urlToArticle;
+        this.sourceName = sourceName;
+    }
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
     }
 
     public String getTitle() {

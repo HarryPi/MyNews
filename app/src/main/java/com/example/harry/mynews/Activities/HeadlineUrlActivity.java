@@ -37,7 +37,6 @@ public class HeadlineUrlActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         activity = this;
 
-        newsViews.getSettings().setJavaScriptEnabled(true);
         newsViews.setWebViewClient(new AppWebViewClient());
         newsViews.setOverScrollMode(View.OVER_SCROLL_NEVER);
         newsViews.loadUrl(getIntent().getStringExtra("url"));

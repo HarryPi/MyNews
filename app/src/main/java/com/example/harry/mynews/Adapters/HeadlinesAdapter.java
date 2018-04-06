@@ -4,10 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -17,7 +14,7 @@ import com.example.harry.mynews.R;
 
 import java.util.List;
 
-import com.example.harry.mynews.Model.ListItem;
+import com.example.harry.mynews.Model.HeadlineItem;
 import com.example.harry.mynews.Util.RoundedCornersTransform;
 import com.squareup.picasso.Picasso;
 
@@ -25,7 +22,6 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.subjects.PublishSubject;
 
 /**
  * Created by harry on 15/03/2018.
@@ -34,7 +30,7 @@ import io.reactivex.subjects.PublishSubject;
 
 public class HeadlinesAdapter extends RecyclerView.Adapter<HeadlinesAdapter.ViewHolder> {
     private Context context;
-    private List<ListItem> listItems;
+    private List<HeadlineItem> headlineItems;
     private Picasso picasso;
 
     @Inject
@@ -52,9 +48,10 @@ public class HeadlinesAdapter extends RecyclerView.Adapter<HeadlinesAdapter.View
 
     @Override
     public void onBindViewHolder(HeadlinesAdapter.ViewHolder holder, int position) {
-        ListItem item = listItems.get(position);
+        HeadlineItem item = headlineItems.get(position);
         holder.title.setText(item.getTitle());
         holder.description.setText(item.getDescription());
+        holder.sourceName.setText(item.getSourceName());
         picasso.load(item.getImgUrl())
                 .transform(new RoundedCornersTransform())
                 .placeholder(R.drawable.loading_animation)
@@ -64,13 +61,13 @@ public class HeadlinesAdapter extends RecyclerView.Adapter<HeadlinesAdapter.View
     }
 
 
-    public void setListItems(@NonNull List<ListItem> listItems) {
-        this.listItems = listItems;
+    public void setHeadlineItems(@NonNull List<HeadlineItem> headlineItems) {
+        this.headlineItems = headlineItems;
     }
 
     @Override
     public int getItemCount() {
-        return listItems.size();
+        return headlineItems.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -80,6 +77,8 @@ public class HeadlinesAdapter extends RecyclerView.Adapter<HeadlinesAdapter.View
         TextView description;
         @BindView(R.id.cardviewImageView)
         ImageView articleImage;
+        @BindView(R.id.cardiview_source_provider_name)
+        TextView sourceName;
 
         public ViewHolder(View itemView) {
             super(itemView);

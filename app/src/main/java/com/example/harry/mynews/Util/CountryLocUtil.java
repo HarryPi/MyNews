@@ -26,7 +26,7 @@ import java.util.Locale;
 public class CountryLocUtil {
     private Application application;
     private String country;
-    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+
     public CountryLocUtil(Application application) {
         this.application = application;
     }

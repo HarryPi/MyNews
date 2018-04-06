@@ -13,13 +13,15 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
+import com.example.harry.mynews.App;
 import com.example.harry.mynews.R;
+import com.example.harry.mynews.ViewModel.UserViewModel;
 import com.firebase.ui.auth.AuthUI;
+
+import javax.inject.Inject;
 
 public class BaseActivity extends AppCompatActivity
 {
@@ -29,12 +31,14 @@ public class BaseActivity extends AppCompatActivity
     NavigationView navigationView;
     Toolbar toolbar;
 
+    @Inject
+    UserViewModel userViewModel;
 
     private static final String LOGOUT_MESSAGE = "Are you sure you want to log out?";
     private static final String CONFIRM = "Yes";
     private static final String CANCEL = "No";
 
-    public void setUpSideNav() {
+    public void setUpSideNavAndToolbar() {
 
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
@@ -52,6 +56,7 @@ public class BaseActivity extends AppCompatActivity
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_basic);
+        ((App) getApplication()).getMainComponent().inject(this);
     }
 
     @Override
@@ -80,10 +85,23 @@ public class BaseActivity extends AppCompatActivity
             onLogOutAction();
         }
         else if (id == R.id.nav_sources) {
-
+            loadNewsSources();
+        }
+        else if (id == R.id.nav_headlines) {
+            loadUserHeadlines();
         }
         drawerLayout.closeDrawers();
+        item.setChecked(false);
     }
+    private void loadUserHeadlines() {
+        Intent intent = new Intent(BaseActivity.this, MainActivity.class);
+        startActivity(intent);
+    }
+    private void loadNewsSources() {
+        Intent intent = new Intent(BaseActivity.this, SourceSelectionActivity.class);
+        startActivity(intent);
+    }
+
     private void onLogOutAction() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         DialogInterface.OnClickListener dialogListener = createConfirmDialog();
@@ -98,6 +116,7 @@ public class BaseActivity extends AppCompatActivity
                 case DialogInterface.BUTTON_POSITIVE:
                     //logout
                     AuthUI.getInstance().signOut(this);
+                    userViewModel.setFirebaseUser(null);
                     startActivity(new Intent(this, LogInActivity.class));
                     break;
                 case DialogInterface.BUTTON_NEGATIVE:
@@ -111,8 +130,7 @@ public class BaseActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
-                // Notice that the code above passes GravityCompat.START as the open drawer animation
-                // gravity to openDrawer(). This ensures nav drawer open animation
+                // This ensures nav drawer open animation
                 // behaves properly for both right-to-left and left-to-right layouts
                 return true;
         }

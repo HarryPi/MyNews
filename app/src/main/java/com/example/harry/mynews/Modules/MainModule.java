@@ -1,12 +1,16 @@
 package com.example.harry.mynews.Modules;
 
 import android.app.Application;
-import android.appwidget.AppWidgetProvider;
 import android.util.Log;
 
 import com.example.harry.mynews.Data.INewsApi;
 import com.example.harry.mynews.Util.CountryLocUtil;
-import com.example.harry.mynews.ViewModel.HeadlinesViewModel;
+import com.example.harry.mynews.ViewModel.NewsViewModel;
+import com.example.harry.mynews.ViewModel.SourcesViewModel;
+import com.example.harry.mynews.ViewModel.UserViewModel;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,6 +36,26 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 @Module
 public class MainModule {
+
+    @Singleton
+    @Provides
+    public DatabaseReference providesDatabaseReference(FirebaseDatabase database) {
+        return database.getReference();
+    }
+    @Singleton
+    @Provides
+    public FirebaseDatabase providesDatabase() {
+        return FirebaseDatabase.getInstance();
+    }
+    @Singleton
+    @Provides
+    public FirebaseAuth providesFireBaseAuth() {
+        return FirebaseAuth.getInstance();
+    }
+    @Provides
+    public UserViewModel providesUserViewModel(FirebaseAuth auth, DatabaseReference reference) {
+        return new UserViewModel(auth.getCurrentUser(), reference);
+    }
     @Singleton
     @Provides
     public CountryLocUtil provideCountryLocUtil(Application app){
@@ -48,7 +72,11 @@ public class MainModule {
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
     }
-
+    @Provides
+    @Singleton
+    public SourcesViewModel providesSourcesViewModel(INewsApi api) {
+        return new SourcesViewModel(api);
+    }
     @Provides
     public File providesFile(Application application) {
         File file = new File(application.getApplicationContext().getCacheDir(), "HttpCache");
@@ -95,8 +123,8 @@ public class MainModule {
     }
     @Singleton
     @Provides
-    HeadlinesViewModel providesHeadlinesViewModel(INewsApi api, CountryLocUtil util) {
-        return new HeadlinesViewModel(api, util);
+    NewsViewModel providesNewsViewModel(INewsApi api, CountryLocUtil util) {
+        return new NewsViewModel(api, util);
     }
 
     @Singleton

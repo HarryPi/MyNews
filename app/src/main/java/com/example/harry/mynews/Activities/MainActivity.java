@@ -4,22 +4,21 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.harry.mynews.Adapters.HeadlinesAdapter;
 import com.example.harry.mynews.Adapters.RecyclerItemClickListener;
 import com.example.harry.mynews.App;
-import com.example.harry.mynews.Model.ListItem;
+import com.example.harry.mynews.Model.Firebase.UserModel;
+import com.example.harry.mynews.Model.HeadlineItem;
 import com.example.harry.mynews.Model.StatusResponseObject;
 import com.example.harry.mynews.R;
-import com.example.harry.mynews.ViewModel.HeadlinesViewModel;
+import com.example.harry.mynews.ViewModel.NewsViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +27,7 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity {
@@ -36,29 +36,70 @@ public class MainActivity extends BaseActivity {
 
     @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
-
+    @BindView(R.id.headlines_progressbar)
+    ProgressBar progressBar;
     @Inject
-    HeadlinesViewModel viewModel;
+    NewsViewModel viewModel;
     @Inject
     HeadlinesAdapter adapter;
 
+    Disposable newsSourcesSubscription;
 
+    @SuppressLint("CheckResult")
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        super.setUpSideNav();
+        super.setUpSideNavAndToolbar();
 
         //Injections
         ((App) getApplication()).getMainComponent().inject(this);
         ButterKnife.bind(this);
+        showProgress(true);
+        subscribeToUserNewsRecourse();
 
-        viewModel.loadCountryWithPermissions(this);
-        viewModel.loadTopHeadlines();
+    }
+    private void showProgress(boolean hide) {
+        if (hide) {
+            progressBar.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.INVISIBLE);
+        } else {
+            progressBar.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showProgress(true);
+        subscribeToUserNewsRecourse();
 
-        setUpRecyclerView();
+    }
 
+    @SuppressLint("CheckResult")
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void subscribeToUserNewsRecourse() {
+        newsSourcesSubscription = userViewModel.getUserRecourse().subscribe(
+                onNext -> {
+                    if (onNext == null | onNext.preferredSources == null) {
+                        viewModel.loadCountryWithPermissions(this);
+                        viewModel.loadTopHeadlinesByCountry();
+                    } else {
+                        getUserHeadlinesBySource(onNext);
+                    }
+                    setUpRecyclerView();
+                    showProgress(false);
+                }
+        );
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void getUserHeadlinesBySource(UserModel model) {
+        final StringBuilder sourcesString = new StringBuilder();
+        model.preferredSources.forEach(s -> sourcesString.append(s).append(","));
+        viewModel.loadTopHeadlinesBySources(sourcesString.toString());
     }
 
     @SuppressLint("CheckResult")
@@ -66,22 +107,23 @@ public class MainActivity extends BaseActivity {
     private void setUpRecyclerView() {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        final List<ListItem> items = new ArrayList<>();
+        final List<HeadlineItem> items = new ArrayList<>();
         viewModel.getLoadedHeadlines()
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         (StatusResponseObject next) -> {
                             next.getArticles().forEach(a ->
-                                    items.add(new ListItem(
+                                    items.add(new HeadlineItem(
                                             a.getTitle(),
                                             a.getDescription(),
                                             a.getUrlToImage(),
-                                            a.getUrl())));
+                                            a.getUrl(),
+                                            a.getSource().getName())));
                             runOnUiThread(() -> adapter.notifyDataSetChanged());
                         }
 
                 );
-        adapter.setListItems(items);
+        adapter.setHeadlineItems(items);
         recyclerView.setAdapter(adapter);
         this.addRecyclerOnTouchEvent(items);
     }
@@ -91,7 +133,7 @@ public class MainActivity extends BaseActivity {
         Toast.makeText(this.getApplicationContext(), error.getMessage(), Toast.LENGTH_LONG).show();
     }
 
-    private void addRecyclerOnTouchEvent(List<ListItem> items) {
+    private void addRecyclerOnTouchEvent(List<HeadlineItem> items) {
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(
                         this,
@@ -109,5 +151,11 @@ public class MainActivity extends BaseActivity {
                                 //nothing later on perhaps rating and commenting?
                             }
                         }));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        newsSourcesSubscription.dispose();
     }
 }

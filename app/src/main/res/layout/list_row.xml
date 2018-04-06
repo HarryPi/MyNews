@@ -49,6 +49,21 @@
                 android:ellipsize="end"
                 android:maxLines="3"
                 />
+
+            <TextView
+                android:id="@+id/cardiview_source_provider_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/cardviewImageView"
+                android:layout_alignStart="@+id/cardview_title"
+                android:text="Source Name" />
+
+            <RatingBar
+                style="@style/Base.Widget.AppCompat.RatingBar.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/cardviewImageView"
+                android:layout_alignParentEnd="true" />
         </RelativeLayout>
     </android.support.v7.widget.CardView>
 </RelativeLayout>
