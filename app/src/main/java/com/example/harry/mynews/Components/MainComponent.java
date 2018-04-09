@@ -1,8 +1,10 @@
 package com.example.harry.mynews.Components;
 
 import com.example.harry.mynews.Activities.BaseActivity;
+import com.example.harry.mynews.Activities.LeaveRatingActivity;
 import com.example.harry.mynews.Activities.LogInActivity;
 import com.example.harry.mynews.Activities.MainActivity;
+import com.example.harry.mynews.Activities.RateProvidersActivity;
 import com.example.harry.mynews.Activities.SourceSelectionActivity;
 import com.example.harry.mynews.Modules.AppModule;
 import com.example.harry.mynews.Modules.MainModule;
@@ -22,4 +24,7 @@ public interface MainComponent {
     void inject(SourceSelectionActivity activity);
     void inject(LogInActivity activity);
     void inject(BaseActivity activity);
+    void inject(RateProvidersActivity activity);
+    void inject(LeaveRatingActivity activity);
+
 }

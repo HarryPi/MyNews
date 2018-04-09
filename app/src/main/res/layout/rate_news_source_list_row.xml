@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/rate_news_srouce_row_background"
+    >
+
+    <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/rate_news_source_cardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        app:cardCornerRadius="@dimen/activity_vertical_margin"
+        app:cardElevation="@dimen/activity_vertical_margin">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/rate_news_source_cardview_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:paddingStart="10dp"
+                android:text="Title"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/rate_news_source_cardview_country"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rate_news_source_cardview_name"
+                android:ellipsize="end"
+                android:paddingTop="10dp"
+                android:paddingStart="10dp"
+                android:maxLines="3"
+                android:text="Country"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/rate_news_source_cardview_language"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rate_news_source_cardview_name"
+                android:layout_toRightOf="@id/rate_news_source_cardview_country"
+                android:layout_alignStart="@id/rate_news_source_cardview_see_all_comments"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:paddingTop="10dp"
+                android:text="Language"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/rate_news_source_cardview_add_comment"
+                android:layout_width="121dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rate_news_source_cardview_country"
+                android:ellipsize="end"
+                android:paddingTop="20dp"
+                android:paddingStart="10dp"
+                android:text="Rate this source"
+                android:textSize="12sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingTop="20dp"
+                android:id="@+id/rate_news_source_cardview_see_all_comments"
+                android:layout_toRightOf="@id/rate_news_source_cardview_add_comment"
+                android:layout_alignBottom="@id/rate_news_source_cardview_add_comment"
+                android:layout_below="@id/rate_news_source_cardview_country"
+                android:text="See all ratings"
+                android:textSize="12sp"
+                />
+
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+</RelativeLayout>

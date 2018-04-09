@@ -59,7 +59,7 @@ public class SourceSelectionActivity extends BaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_source_selection);
+        setContentView(R.layout.activity_rate_providers);
         ((App) getApplication()).getMainComponent().inject(this);
         ButterKnife.bind(this);
         super.setUpSideNavAndToolbar();

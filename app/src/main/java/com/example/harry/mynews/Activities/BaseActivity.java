@@ -90,9 +90,17 @@ public class BaseActivity extends AppCompatActivity
         else if (id == R.id.nav_headlines) {
             loadUserHeadlines();
         }
+        else if (id == R.id.nav_wall) {
+            loadWall();
+        }
         drawerLayout.closeDrawers();
         item.setChecked(false);
     }
+
+    private void loadWall() {
+        startActivity(new Intent(BaseActivity.this, RateProvidersActivity.class));
+    }
+
     private void loadUserHeadlines() {
         Intent intent = new Intent(BaseActivity.this, MainActivity.class);
         startActivity(intent);

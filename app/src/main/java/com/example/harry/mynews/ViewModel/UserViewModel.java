@@ -1,7 +1,9 @@
 package com.example.harry.mynews.ViewModel;
 
 import android.util.Log;
+import android.widget.LinearLayout;
 
+import com.example.harry.mynews.Model.Firebase.RatingModel;
 import com.example.harry.mynews.Model.Firebase.UserModel;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -53,4 +55,5 @@ public class UserViewModel {
         });
         return userModel;
     }
+
 }

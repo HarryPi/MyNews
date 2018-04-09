@@ -49,7 +49,8 @@
         <activity android:name=".Activities.HeadlineUrlActivity" />
         <activity android:name=".Activities.SourceSelectionActivity" />
         <activity android:name=".Activities.BaseActivity" />
-        <activity android:name=".Activities.RateProvidersActivity"></activity>
+        <activity android:name=".Activities.RateProvidersActivity" />
+        <activity android:name=".Activities.LeaveRatingActivity"></activity>
     </application>
 
 </manifest>

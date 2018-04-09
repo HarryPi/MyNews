@@ -6,9 +6,11 @@ import android.util.Log;
 import com.example.harry.mynews.Data.INewsApi;
 import com.example.harry.mynews.Util.CountryLocUtil;
 import com.example.harry.mynews.ViewModel.NewsViewModel;
+import com.example.harry.mynews.ViewModel.RateSourceViewModel;
 import com.example.harry.mynews.ViewModel.SourcesViewModel;
 import com.example.harry.mynews.ViewModel.UserViewModel;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.FieldNamingPolicy;
@@ -36,7 +38,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 @Module
 public class MainModule {
-
+    @Singleton
+    @Provides
+    public RateSourceViewModel providesRateSourceViewModel(FirebaseAuth auth, DatabaseReference reference){
+        return new RateSourceViewModel(auth.getCurrentUser(), reference);
+    }
     @Singleton
     @Provides
     public DatabaseReference providesDatabaseReference(FirebaseDatabase database) {
