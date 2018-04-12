@@ -1,7 +1,6 @@
 package com.example.harry.mynews.Activities;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
@@ -10,9 +9,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.SparseBooleanArray;
-import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -59,13 +56,13 @@ public class SourceSelectionActivity extends BaseActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_rate_providers);
+        setContentView(R.layout.activity_source_selection);
         ((App) getApplication()).getMainComponent().inject(this);
-        ButterKnife.bind(this);
         super.setUpSideNavAndToolbar();
+        ButterKnife.bind(this);
         this.setUpRecyclerView();
-
     }
+
 
     @SuppressLint("CheckResult")
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -73,7 +70,7 @@ public class SourceSelectionActivity extends BaseActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        sourcesViewModel.getNewsSources(null, null)
+        subscriptionsToDispose.add(sourcesViewModel.getNewsSources(null, null)
                 .subscribeOn(Schedulers.io())
                 .subscribe(
                         (NewsSourceSourceResponseObject next) -> {
@@ -86,7 +83,7 @@ public class SourceSelectionActivity extends BaseActivity {
                             runOnUiThread(() -> adapter.notifyDataSetChanged());
                         }
 
-                );
+                ));
         adapter.setNewsSourceItem(sourcesViewModel.getAllNewsSources());
         recyclerView.setAdapter(adapter);
         addRecyclerOnTouchEvent(this);

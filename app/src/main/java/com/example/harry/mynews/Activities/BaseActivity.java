@@ -2,9 +2,11 @@ package com.example.harry.mynews.Activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -21,7 +23,12 @@ import com.example.harry.mynews.R;
 import com.example.harry.mynews.ViewModel.UserViewModel;
 import com.firebase.ui.auth.AuthUI;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
+
+import io.reactivex.disposables.Disposable;
 
 public class BaseActivity extends AppCompatActivity
 {
@@ -30,7 +37,7 @@ public class BaseActivity extends AppCompatActivity
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     Toolbar toolbar;
-
+    List<Disposable> subscriptionsToDispose = new ArrayList<>();
     @Inject
     UserViewModel userViewModel;
 
@@ -50,6 +57,12 @@ public class BaseActivity extends AppCompatActivity
             onNavItemClickAction(item);
             return true;
         });
+    }
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        subscriptionsToDispose.forEach(Disposable::dispose);
     }
 
     @Override

@@ -19,15 +19,17 @@ import com.example.harry.mynews.Model.HeadlineItem;
 import com.example.harry.mynews.Model.StatusResponseObject;
 import com.example.harry.mynews.R;
 import com.example.harry.mynews.ViewModel.NewsViewModel;
+import com.example.harry.mynews.ViewModel.RateSourceViewModel;
+import com.example.harry.mynews.ViewModel.SourcesViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity {
@@ -42,8 +44,12 @@ public class MainActivity extends BaseActivity {
     NewsViewModel viewModel;
     @Inject
     HeadlinesAdapter adapter;
+    @Inject
+    RateSourceViewModel
+            rateSourceViewModel;
+    @Inject
+    SourcesViewModel sourcesViewModel;
 
-    Disposable newsSourcesSubscription;
 
     @SuppressLint("CheckResult")
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -60,8 +66,9 @@ public class MainActivity extends BaseActivity {
         subscribeToUserNewsRecourse();
 
     }
-    private void showProgress(boolean hide) {
-        if (hide) {
+
+    private void showProgress(boolean show) {
+        if (show) {
             progressBar.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.INVISIBLE);
         } else {
@@ -69,6 +76,7 @@ public class MainActivity extends BaseActivity {
             recyclerView.setVisibility(View.VISIBLE);
         }
     }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onResume() {
@@ -81,9 +89,9 @@ public class MainActivity extends BaseActivity {
     @SuppressLint("CheckResult")
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void subscribeToUserNewsRecourse() {
-        newsSourcesSubscription = userViewModel.getUserRecourse().subscribe(
+        subscriptionsToDispose.add(userViewModel.getUserRecourse().subscribe(
                 onNext -> {
-                    if (onNext == null | onNext.preferredSources == null) {
+                    if (onNext.preferredSources.isEmpty()) {
                         viewModel.loadCountryWithPermissions(this);
                         viewModel.loadTopHeadlinesByCountry();
                     } else {
@@ -92,7 +100,7 @@ public class MainActivity extends BaseActivity {
                     setUpRecyclerView();
                     showProgress(false);
                 }
-        );
+        ));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -108,21 +116,29 @@ public class MainActivity extends BaseActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         final List<HeadlineItem> items = new ArrayList<>();
-        viewModel.getLoadedHeadlines()
+        subscriptionsToDispose.add(viewModel.getLoadedHeadlines()
                 .subscribeOn(Schedulers.io())
                 .subscribe(
-                        (StatusResponseObject next) -> {
+                        (StatusResponseObject next) ->
+                        {
                             next.getArticles().forEach(a ->
-                                    items.add(new HeadlineItem(
-                                            a.getTitle(),
-                                            a.getDescription(),
-                                            a.getUrlToImage(),
-                                            a.getUrl(),
-                                            a.getSource().getName())));
-                            runOnUiThread(() -> adapter.notifyDataSetChanged());
-                        }
 
-                );
+                                    {
+                                        AtomicReference<Float> rating = new AtomicReference<>((float) 0);
+                                        rateSourceViewModel.getRatingsForSourceProvider(a.getSource().getId(), true).blockingSubscribe(rating::set);
+                                        items.add(new HeadlineItem(
+                                                a.getTitle(),
+                                                a.getDescription(),
+                                                a.getUrlToImage(),
+                                                a.getUrl(),
+                                                a.getSource().getName(),
+                                                a.getSource().getId(),
+                                                rating.get()
+                                                ));
+                                    }
+                            );
+                            runOnUiThread(() -> adapter.notifyDataSetChanged());
+                        }));
         adapter.setHeadlineItems(items);
         recyclerView.setAdapter(adapter);
         this.addRecyclerOnTouchEvent(items);
@@ -151,11 +167,5 @@ public class MainActivity extends BaseActivity {
                                 //nothing later on perhaps rating and commenting?
                             }
                         }));
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        newsSourcesSubscription.dispose();
     }
 }

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.example.harry.mynews.R;
@@ -16,12 +17,14 @@ import java.util.List;
 
 import com.example.harry.mynews.Model.HeadlineItem;
 import com.example.harry.mynews.Util.RoundedCornersTransform;
+import com.example.harry.mynews.ViewModel.RateSourceViewModel;
 import com.squareup.picasso.Picasso;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
 
 /**
  * Created by harry on 15/03/2018.
@@ -32,6 +35,9 @@ public class HeadlinesAdapter extends RecyclerView.Adapter<HeadlinesAdapter.View
     private Context context;
     private List<HeadlineItem> headlineItems;
     private Picasso picasso;
+    @Inject
+    RateSourceViewModel
+            rateSourceViewModel;
 
     @Inject
     public HeadlinesAdapter(Application application, Picasso picasso) {
@@ -58,8 +64,10 @@ public class HeadlinesAdapter extends RecyclerView.Adapter<HeadlinesAdapter.View
                 .error(R.mipmap.ic_image)
                 .fit()
                 .into(holder.articleImage);
+        if (item.getId() != null) {
+            holder.rating.setRating(item.getRating());
+        }
     }
-
 
     public void setHeadlineItems(@NonNull List<HeadlineItem> headlineItems) {
         this.headlineItems = headlineItems;
@@ -79,6 +87,8 @@ public class HeadlinesAdapter extends RecyclerView.Adapter<HeadlinesAdapter.View
         ImageView articleImage;
         @BindView(R.id.cardiview_source_provider_name)
         TextView sourceName;
+        @BindView(R.id.cardview_ratingbar)
+        public RatingBar rating;
 
         public ViewHolder(View itemView) {
             super(itemView);

@@ -45,7 +45,12 @@ public class UserViewModel {
         databaseReference.child(USERS).child(firebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-               userModel.onNext(dataSnapshot.getValue(UserModel.class));
+                UserModel model = dataSnapshot.getValue(UserModel.class);
+                if (model == null) {
+                    userModel.onNext(new UserModel());
+                } else {
+                    userModel.onNext(model);
+                }
             }
 
             @Override

@@ -12,16 +12,19 @@ public class RatingModel {
     private String user;
     private Float rating;
     private String userId;
+    private String providerId;
 
     public RatingModel() {
     }
 
-    public RatingModel(String comment, String user, Float rating, String userId) {
+    public RatingModel(String comment, String user, Float rating, String userId, String providerId) {
         this.comment = comment;
         this.user = user;
         this.rating = rating;
         this.userId = userId;
+        this.providerId = providerId;
     }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -29,8 +32,17 @@ public class RatingModel {
         result.put("user", user);
         result.put("rating", rating);
         result.put("userId", userId);
+        result.put("providerId", providerId);
 
         return result;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
     public String getComment() {

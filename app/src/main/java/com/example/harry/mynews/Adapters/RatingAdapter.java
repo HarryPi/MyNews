@@ -1,6 +1,7 @@
 package com.example.harry.mynews.Adapters;
 
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Color;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import com.example.harry.mynews.Model.NewsSourceItem;
 import com.example.harry.mynews.R;
+import com.example.harry.mynews.ViewModel.RateSourceViewModel;
 import com.example.harry.mynews.ViewModel.SourcesViewModel;
 
 import java.util.List;
@@ -32,10 +34,10 @@ public class RatingAdapter extends RecyclerView.Adapter<RatingAdapter.ViewHolder
     private List<NewsSourceItem> newsSourceItem;
     private IRatingClickListener listener;
     @Inject
-    SourcesViewModel viewModel;
+    RateSourceViewModel rateSourceViewModel;
 
     public interface IRatingClickListener {
-        public void addRating(String id, String description, String name);
+        public void addRating(NewsSourceItem item);
         public void seeAllRatings(String providerId);
     }
 
@@ -49,23 +51,31 @@ public class RatingAdapter extends RecyclerView.Adapter<RatingAdapter.ViewHolder
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.rate_news_source_list_row, parent, false);
+
         return new ViewHolder(view);
+
     }
 
+    @SuppressLint("CheckResult")
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.setIsRecyclable(false);
-        NewsSourceItem item = newsSourceItem.get(position);
-        holder.name.setText(item.getName());
-        holder.country.setText(context.getString(R.string.country, item.getCountry()));
-        holder.language.setText(context.getString(R.string.language, item.getLanguage()));
-        if (viewModel.getSelectedItems().get(position, false)) {
-            holder.cardView.setCardBackgroundColor(Color.LTGRAY);
-        } else {
-            holder.cardView.setBackgroundColor(Color.WHITE);
-        }
-        holder.addCommentBtn.setOnClickListener(view -> listener.addRating(item.getId(), item.getDescription(), item.getName()));
-        holder.seeCommentsBtn.setOnClickListener(view -> listener.seeAllRatings(item.getId()));
+        //holder.setIsRecyclable(false);
+        rateSourceViewModel.getUserRatingsFromMemoryOrReload(false).subscribe(
+                ratedList -> {
+                    NewsSourceItem item = newsSourceItem.get(position);
+                    holder.name.setText(item.getName());
+                    holder.country.setText(context.getString(R.string.country, item.getCountry()));
+                    holder.language.setText(context.getString(R.string.language, item.getLanguage()));
+                    holder.addCommentBtn.setOnClickListener(view -> listener.addRating(item));
+                    holder.seeCommentsBtn.setOnClickListener(view -> listener.seeAllRatings(item.getId()));
+                    if (ratedList.containsKey(item.getId())) {
+                        holder.addCommentBtn.setText("Edit your review");
+                        newsSourceItem.get(position).setReviewd(true);
+                    }
+                }
+        );
+
+
     }
 
     public void setListener(IRatingClickListener listener) {
@@ -80,6 +90,8 @@ public class RatingAdapter extends RecyclerView.Adapter<RatingAdapter.ViewHolder
     public int getItemCount() {
         return newsSourceItem.size();
     }
+
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.rate_news_source_cardview_name)
         TextView name;
