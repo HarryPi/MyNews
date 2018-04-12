@@ -13,6 +13,15 @@ public class HeadlineItem {
     private Float rating;
     private String id;
 
+    public HeadlineItem(String title, String description, String imgUrl, String urlToArticle, String sourceName, String id) {
+        this.title = title;
+        this.description = description;
+        this.imgUrl = imgUrl;
+        this.urlToArticle = urlToArticle;
+        this.sourceName = sourceName;
+        this.id = id;
+    }
+
     public HeadlineItem(String title, String description, String imgUrl, String urlToArticle, String sourceName, String id, Float rating) {
         this.title = title;
         this.description = description;

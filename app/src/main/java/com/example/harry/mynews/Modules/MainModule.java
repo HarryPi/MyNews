@@ -5,12 +5,10 @@ import android.util.Log;
 
 import com.example.harry.mynews.Data.INewsApi;
 import com.example.harry.mynews.Util.CountryLocUtil;
-import com.example.harry.mynews.ViewModel.NewsViewModel;
 import com.example.harry.mynews.ViewModel.RateSourceViewModel;
 import com.example.harry.mynews.ViewModel.SourcesViewModel;
 import com.example.harry.mynews.ViewModel.UserViewModel;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.FieldNamingPolicy;
@@ -80,8 +78,8 @@ public class MainModule {
     }
     @Provides
     @Singleton
-    public SourcesViewModel providesSourcesViewModel(INewsApi api) {
-        return new SourcesViewModel(api);
+    public SourcesViewModel providesSourcesViewModel(INewsApi api, CountryLocUtil util) {
+        return new SourcesViewModel(api, util);
     }
     @Provides
     public File providesFile(Application application) {
@@ -126,11 +124,6 @@ public class MainModule {
                 new HttpLoggingInterceptor(message -> Log.d("Logger", message));
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         return httpLoggingInterceptor;
-    }
-    @Singleton
-    @Provides
-    NewsViewModel providesNewsViewModel(INewsApi api, CountryLocUtil util) {
-        return new NewsViewModel(api, util);
     }
 
     @Singleton

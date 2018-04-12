@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import io.reactivex.subjects.BehaviorSubject;
 
 public class RateSourceViewModel {
@@ -42,8 +44,7 @@ public class RateSourceViewModel {
      *
      * @param reload Indicates if the data should be reloaded
      */
-    public BehaviorSubject<HashMap<String, RatingModel>> getUserRatingsFromMemoryOrReload(boolean reload) {
-        if (reload) {
+    public BehaviorSubject<HashMap<String, RatingModel>> getUserRatings(boolean reload) {
             ratedByUserProviders = new HashMap<>();
             databaseReference.child(USERS).child(user.getUid()).child(REVIEWS).addListenerForSingleValueEvent(new ValueEventListener() {
                 @RequiresApi(api = Build.VERSION_CODES.N)
@@ -64,8 +65,6 @@ public class RateSourceViewModel {
                     Log.d(TAG, databaseError.getMessage());
                 }
             });
-
-        } else if (ratedByUserProviders == null) getUserRatingsFromMemoryOrReload(true);
         return userRatings;
     }
 
@@ -150,43 +149,49 @@ public class RateSourceViewModel {
     }
 
     /**
-     * Returns synchronously a rating
+     * Returns an observable object that will return the rating once done
      * @param sourceProviderId The source provider id
      * @param fromMemoryIfAvailable Will check if value exists before fetching it from database */
-    public BehaviorSubject<Float> getRatingsForSourceProvider(String sourceProviderId, boolean fromMemoryIfAvailable) {
-        BehaviorSubject<Float> subject = BehaviorSubject.create();
-        if (fromMemoryIfAvailable) {
-            if (inMemorySourceRatings.containsKey(sourceProviderId)) {
-                subject.onNext(inMemorySourceRatings.get(sourceProviderId));
+    public Observable<Float> getRatingsForSourceProvider(String sourceProviderId, boolean fromMemoryIfAvailable) {
+        return Observable.create( sub -> {
+            if (fromMemoryIfAvailable) {
+                if (inMemorySourceRatings.containsKey(sourceProviderId)) {
+                    sub.onNext(inMemorySourceRatings.get(sourceProviderId));
+                    sub.onComplete();
+                } else
+                    getRatingFromDatabase(sub, sourceProviderId);
+            } else {
+                getRatingFromDatabase(sub, sourceProviderId);
             }
-            else getRatingsForSourceProvider(sourceProviderId, false);
-        } else {
-            databaseReference
-                    .child(SOURCE_PROVIDERS)
-                    .child(sourceProviderId)
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                        @RequiresApi(api = Build.VERSION_CODES.N)
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            AtomicReference<Float> rating = new AtomicReference(0.0f);
-                            AtomicInteger size = new AtomicInteger(0);
-                            dataSnapshot.getChildren().forEach(child -> {
-                                RatingModel model = child.getValue(RatingModel.class);
-                                rating.getAndUpdate(r -> r + model.getRating());
-                                size.getAndIncrement();
-                            });
-                            rating.getAndUpdate(r -> r / size.get());
-                            inMemorySourceRatings.put(sourceProviderId, rating.get());
-                            subject.onNext(rating.get());
-                        }
 
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-        }
-        return subject;
+        });
     }
+    private void getRatingFromDatabase(ObservableEmitter<Float> sub, String sourceProviderId) {
+        databaseReference
+                .child(SOURCE_PROVIDERS)
+                .child(sourceProviderId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.N)
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        AtomicReference<Float> rating = new AtomicReference(0.0f);
+                        AtomicInteger size = new AtomicInteger(0);
+                        dataSnapshot.getChildren().forEach(child -> {
+                            RatingModel model = child.getValue(RatingModel.class);
+                            rating.getAndUpdate(r -> r + model.getRating());
+                            size.getAndIncrement();
+                        });
+                        rating.getAndUpdate(r -> r / size.get());
+                        inMemorySourceRatings.put(sourceProviderId, rating.get());
+                        sub.onNext(rating.get());
+                        sub.onComplete();
+                    }
 
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+    }
 }

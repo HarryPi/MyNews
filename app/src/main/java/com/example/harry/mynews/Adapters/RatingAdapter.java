@@ -4,7 +4,6 @@ package com.example.harry.mynews.Adapters;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -16,7 +15,6 @@ import android.widget.TextView;
 import com.example.harry.mynews.Model.NewsSourceItem;
 import com.example.harry.mynews.R;
 import com.example.harry.mynews.ViewModel.RateSourceViewModel;
-import com.example.harry.mynews.ViewModel.SourcesViewModel;
 
 import java.util.List;
 
@@ -60,7 +58,7 @@ public class RatingAdapter extends RecyclerView.Adapter<RatingAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         //holder.setIsRecyclable(false);
-        rateSourceViewModel.getUserRatingsFromMemoryOrReload(false).subscribe(
+        rateSourceViewModel.getUserRatings(false).subscribe(
                 ratedList -> {
                     NewsSourceItem item = newsSourceItem.get(position);
                     holder.name.setText(item.getName());

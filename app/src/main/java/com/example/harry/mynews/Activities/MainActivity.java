@@ -18,13 +18,12 @@ import com.example.harry.mynews.Model.Firebase.UserModel;
 import com.example.harry.mynews.Model.HeadlineItem;
 import com.example.harry.mynews.Model.StatusResponseObject;
 import com.example.harry.mynews.R;
-import com.example.harry.mynews.ViewModel.NewsViewModel;
 import com.example.harry.mynews.ViewModel.RateSourceViewModel;
 import com.example.harry.mynews.ViewModel.SourcesViewModel;
+import com.example.harry.mynews.ViewModel.UserViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 
@@ -41,15 +40,14 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.headlines_progressbar)
     ProgressBar progressBar;
     @Inject
-    NewsViewModel viewModel;
-    @Inject
     HeadlinesAdapter adapter;
     @Inject
     RateSourceViewModel
             rateSourceViewModel;
     @Inject
     SourcesViewModel sourcesViewModel;
-
+    @Inject
+    UserViewModel userViewModel;
 
     @SuppressLint("CheckResult")
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -63,8 +61,7 @@ public class MainActivity extends BaseActivity {
         ((App) getApplication()).getMainComponent().inject(this);
         ButterKnife.bind(this);
         showProgress(true);
-        subscribeToUserNewsRecourse();
-
+        userViewModel.getUserRecourse().subscribe(this::setUpRecyclerView);
     }
 
     private void showProgress(boolean show) {
@@ -78,70 +75,33 @@ public class MainActivity extends BaseActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    @Override
-    protected void onResume() {
-        super.onResume();
-        showProgress(true);
-        subscribeToUserNewsRecourse();
-
-    }
-
-    @SuppressLint("CheckResult")
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private void subscribeToUserNewsRecourse() {
-        subscriptionsToDispose.add(userViewModel.getUserRecourse().subscribe(
-                onNext -> {
-                    if (onNext.preferredSources.isEmpty()) {
-                        viewModel.loadCountryWithPermissions(this);
-                        viewModel.loadTopHeadlinesByCountry();
-                    } else {
-                        getUserHeadlinesBySource(onNext);
-                    }
-                    setUpRecyclerView();
-                    showProgress(false);
-                }
-        ));
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    private void getUserHeadlinesBySource(UserModel model) {
+    private String getUserSources(UserModel model) {
         final StringBuilder sourcesString = new StringBuilder();
         model.preferredSources.forEach(s -> sourcesString.append(s).append(","));
-        viewModel.loadTopHeadlinesBySources(sourcesString.toString());
+        return sourcesString.toString();
     }
 
     @SuppressLint("CheckResult")
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private void setUpRecyclerView() {
+    private void setUpRecyclerView(UserModel userModel) {
+        String sources = getUserSources(userModel);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        final List<HeadlineItem> items = new ArrayList<>();
-        subscriptionsToDispose.add(viewModel.getLoadedHeadlines()
+        subscriptionsToDispose.add(sourcesViewModel.getUserHeadlines(sources, true)
                 .subscribeOn(Schedulers.io())
-                .subscribe(
-                        (StatusResponseObject next) ->
-                        {
-                            next.getArticles().forEach(a ->
-
-                                    {
-                                        AtomicReference<Float> rating = new AtomicReference<>((float) 0);
-                                        rateSourceViewModel.getRatingsForSourceProvider(a.getSource().getId(), true).blockingSubscribe(rating::set);
-                                        items.add(new HeadlineItem(
-                                                a.getTitle(),
-                                                a.getDescription(),
-                                                a.getUrlToImage(),
-                                                a.getUrl(),
-                                                a.getSource().getName(),
-                                                a.getSource().getId(),
-                                                rating.get()
-                                                ));
-                                    }
-                            );
-                            runOnUiThread(() -> adapter.notifyDataSetChanged());
-                        }));
-        adapter.setHeadlineItems(items);
-        recyclerView.setAdapter(adapter);
-        this.addRecyclerOnTouchEvent(items);
+                .doOnComplete(() -> runOnUiThread(() -> {
+                    adapter.notifyDataSetChanged();
+                    showProgress(false);
+                }))
+                .subscribe(headlineItems -> {
+                    headlineItems.forEach(item ->
+                            rateSourceViewModel.getRatingsForSourceProvider(item.getId(), true).blockingSubscribe(item::setRating));
+                    runOnUiThread(() -> {
+                        adapter.setHeadlineItems(headlineItems);
+                        recyclerView.setAdapter(adapter);
+                        this.addRecyclerOnTouchEvent(headlineItems);
+                    });
+                }));
     }
 
 

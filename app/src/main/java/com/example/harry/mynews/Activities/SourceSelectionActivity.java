@@ -21,7 +21,6 @@ import com.example.harry.mynews.App;
 import com.example.harry.mynews.Model.NewsSourceItem;
 import com.example.harry.mynews.Model.NewsSourceSourceResponseObject;
 import com.example.harry.mynews.R;
-import com.example.harry.mynews.ViewModel.NewsViewModel;
 import com.example.harry.mynews.ViewModel.SourcesViewModel;
 import com.example.harry.mynews.ViewModel.UserViewModel;
 import com.google.firebase.database.DatabaseReference;
@@ -48,8 +47,6 @@ public class SourceSelectionActivity extends BaseActivity {
     UserViewModel userViewModel;
     @Inject
     DatabaseReference database;
-    @Inject
-    NewsViewModel newsViewModel;
     private android.view.ActionMode actionMode;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -162,6 +159,7 @@ public class SourceSelectionActivity extends BaseActivity {
             }
         }
         userViewModel.addSources(sourcesById);
+        sourcesViewModel.resetModelMemory();
     }
 
     private void addOrRemoveSource(View view, int position) {

@@ -14,6 +14,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.security.acl.LastOwnerException;
 import java.util.List;
 
+import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 
 public class UserViewModel {
@@ -41,24 +42,24 @@ public class UserViewModel {
     public void addSources(List<String> sources) {
         databaseReference.child(USERS).child(firebaseUser.getUid()).child(PREFERRED_SOURCES).setValue(sources);
     }
-    public BehaviorSubject<UserModel> getUserRecourse() {
-        databaseReference.child(USERS).child(firebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+    public Observable<UserModel> getUserRecourse() {
+        return Observable.create(sub ->
+                databaseReference.child(USERS).child(firebaseUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 UserModel model = dataSnapshot.getValue(UserModel.class);
                 if (model == null) {
-                    userModel.onNext(new UserModel());
+                    sub.onNext(new UserModel());
                 } else {
-                    userModel.onNext(model);
+                    sub.onNext(model);
                 }
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.d(TAG, databaseError.getMessage());
             }
-        });
-        return userModel;
+        }));
+
     }
 
 }

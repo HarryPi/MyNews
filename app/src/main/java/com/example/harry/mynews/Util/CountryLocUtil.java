@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresPermission;
 import android.support.v4.app.ActivityCompat;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.Locale;
 public class CountryLocUtil {
     private Application application;
     private String country;
+    private static String TAG = CountryLocUtil.class.getName();
 
     public CountryLocUtil(Application application) {
         this.application = application;
@@ -58,12 +60,15 @@ public class CountryLocUtil {
                         break;
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    countryName = "uk";
+                    Log.d(TAG, e.getMessage());
                 }
             }
         }
 
-        return countryName.toLowerCase();
+        if (countryName != null )
+            return countryName.toLowerCase();
+        else return "uk";
     }
     @Nullable
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)

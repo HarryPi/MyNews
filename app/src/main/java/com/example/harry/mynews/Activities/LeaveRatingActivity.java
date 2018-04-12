@@ -30,6 +30,7 @@ public class LeaveRatingActivity extends BaseActivity {
     @Inject
     RateSourceViewModel
             sourceViewModel;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +63,7 @@ public class LeaveRatingActivity extends BaseActivity {
                     ratingBar.getRating(),
                     reviewField.getText().toString(), false);
         }
-        sourceViewModel.getUserRatingsFromMemoryOrReload(true); // Reload user ratings
+        sourceViewModel.getUserRatings(true); // Reload user ratings
+        sourceViewModel.reloadInMemorySourceRatings();
     }
 }

@@ -1,8 +1,6 @@
 package com.example.harry.mynews;
 
-import android.*;
 import android.app.Application;
-import android.support.v4.app.ActivityCompat;
 
 import com.example.harry.mynews.Components.DaggerMainComponent;
 import com.example.harry.mynews.Components.MainComponent;
